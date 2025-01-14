@@ -1,0 +1,59 @@
+# R-related files
+.Rhistory        # R session history
+.RData           # R data files
+.Ruserdata       # R user-specific data
+*.Rproj.user     # RStudio project-specific settings
+
+# Ignore R packages installed locally
+.Rlib
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+__pycache__
+
+# Ignore virtual environments
+venv/
+env/
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore OS-specific files
+Thumbs.db     # Windows
+
+# Ignore other common system files
+.idea/         # JetBrains IDEs
+*.log          # Log files
+*.bak          # Backup files
+
+# ArcGIS and Geospatial Files
+*.shp          # Shapefile
+*.shx          # Shapefile index
+*.dbf          # Shapefile attribute data
+*.prj          # Projection files
+*.cpg          # Character encoding file
+*.sbn          # Spatial index
+*.sbx          # Spatial index (binary)
+*.lock         # ArcGIS lock files
+*.gdb          # Geodatabase files
+*.gdb-index    # Geodatabase index files
+*.mxd          # ArcMap document
+*.lyr          # Layer file
+*.xml          # Metadata files
+*.aux.xml      # Auxiliary file for rasters
+
+# Raster Files
+*.tif          # TIFF files (raster data)
+*.asc          # ASCII raster files
+*.img          # ERDAS Imagine files
+*.grd          # Grid files
+*.nc           # NetCDF files
+
+# Temporary Files
+*.bak          # Backup files
+*.tmp          # Temporary files
+*.swp          # Swap files (created by editors like vim)
