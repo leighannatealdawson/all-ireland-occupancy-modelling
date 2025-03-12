@@ -29,6 +29,7 @@ Thumbs.db     # Windows
 .idea/         # JetBrains IDEs
 *.log          # Log files
 *.bak          # Backup files
+*.lock         # Lock files
 
 # ArcGIS and Geospatial Files
 *.shp          # Shapefile
@@ -38,13 +39,17 @@ Thumbs.db     # Windows
 *.cpg          # Character encoding file
 *.sbn          # Spatial index
 *.sbx          # Spatial index (binary)
+*gbp*        # Ignore folders ending with .gbp
 *.lock         # ArcGIS lock files
 *.gdb          # Geodatabase files
 *.gdb-index    # Geodatabase index files
+*.gdbtable     # Geodatabase table files
 *.mxd          # ArcMap document
 *.lyr          # Layer file
 *.xml          # Metadata files
 *.aux.xml      # Auxiliary file for rasters
+*.gpkg          # Geopackage files
+*.spx          # Geopackage spatial index
 
 # Raster Files
 *.tif          # TIFF files (raster data)
