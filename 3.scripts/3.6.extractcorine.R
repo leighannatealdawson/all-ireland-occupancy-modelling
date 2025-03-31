@@ -28,8 +28,19 @@ library(terra)       # For advanced raster and spatial data processing
 library(igr)         # For working in Irish Grid Reference system (https://cran.r-project.org/web/packages/igr/vignettes/igr.html#:~:text=The%20igr%20package%20is%20designed,R%20packages%20can%20work%20with.)
 library(rnaturalearth) # For downloading country bounties 
 library(rnaturalearthdata) # For downloading country bounties data 
+<<<<<<< Updated upstream
 library(exactextractr)   # For extracting raster data by polygon
 
+=======
+print("Libraries loaded successfully.")
+
+# Required Libraries
+library(sf)
+library(raster)
+library(exactextractr)
+library(dplyr)
+library(ggplot2)
+>>>>>>> Stashed changes
 
 # Load the CORINE RData file
 load("1.data/1.2.processed/corine.RData")

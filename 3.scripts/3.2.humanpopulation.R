@@ -112,6 +112,7 @@ st_write(humanpop_ni_1kmgrid_sf, dsn = shp_path, driver = "ESRI Shapefile")
 #### 2. Republic of Ireland Population Data ####
 # Import data 
 # Import data
+<<<<<<< Updated upstream
 humanpop_ie_1kmgrid2011_2016change <- read_excel("1.data/1.1.raw/humanpopulationdata/Censusireland2011/1_Km_dataset_population_change_2011-2016IE.xlsx")
 # Import the shapefile
 combined_grid_square_2021 <- st_read("1.data/1.1.raw/humanpopulationdata/Grid_Square_2021_shapefiles/Combined_Grid_Square_2021.shp")
@@ -125,6 +126,8 @@ View(combined_grid_square_2021)
 
 
 
+=======
+>>>>>>> Stashed changes
 humanpop_ie_1kmgrid2011 <- read.csv("1.data/1.1.raw/humanpopulationdata/Censusireland2011/COP2011_Grid_ITM_IE_1Km.csv")
 humanpop_ie_1kmgrid2016 <- read_excel("1.data/1.1.raw/humanpopulationdata/Censusireland2011/1_Km_dataset_population_change_2011-2016IE.xlsx")
 humanpop_ie_1kmgrid_2022 <- read_excel(("1.data/1.1.raw/humanpopulationdata/IrishCensusGrid/grid1km_population_2022.xlsx"))

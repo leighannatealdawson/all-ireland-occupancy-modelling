@@ -2,8 +2,8 @@
 # Purpose: Pocesses CORINE Land Cover data for all of Ireland
 #          to prepare it for use in a multi-species occupancy model. 
 #
-# Author: Leighanna
-# Date: [Insert Date]
+# Author: Leighanna Teal Dawson 
+# Date: 15 Jan 2025
 # 
 ##### Contence of the script:#####
 # 0. Admin (load libraries, set working directory, load data)
@@ -54,7 +54,7 @@ print("Libraries loaded successfully.")
 
 
 ######################################################################
-# Load CORINE Land Cover data for Ireland from 2018 # 
+#### 1.Load CORINE Land Cover data for Ireland from 2018 ####
 # Data source: https://land.copernicus.eu/en/products/corine-land-cover/clc2018
 
 # Define the path to the .gdb file
@@ -68,8 +68,10 @@ str(corinedataraw)
 head(corinedataraw)
 colnames(corinedataraw)
 dim(corinedataraw)
-
-# Plot the geometries from the layer (this may take some time)
+unique(corinedataraw$Code_18)
+count unqiue in code_18 
+length(unique(corinedataraw$Code_18))
+count # Plot the geometries from the layer (this may take some time)
 # plot(st_geometry(corinedataraw), main = "Corine Land Cover 2018")
 
 # View the CORINE data 
@@ -110,36 +112,23 @@ colnames(corine)
 rm(list = setdiff(ls(), "corine"))
 
 
-##########################################################################
-# Get country boundry for Ireland
-# Load the map of UK and Ireland and Northern Ireland boundaries
-ireland_uk <- ne_countries(scale = "large", returnclass = "sf")[ne_countries(scale = "large", returnclass = "sf")$name %in% c("Ireland", "United Kingdom"), ]
-northern_ireland <- ne_states(geounit = "northern ireland", returnclass = "sf")
-ireland <- ne_states(geounit = "ireland", returnclass = "sf")
-
-# Merge Northern Ireland and Republic of Ireland boundaries
-ireland_map <- rbind(ireland, northern_ireland)
-
-# Simplify the map to just the outline by dissolving the geometry
-ireland_outline <- st_union(ireland_map)
-
-
-# Plot the outline on top of the counties (showing just the boundary)
-ggplot() +
-  geom_sf(data = ireland_map, aes(fill = name)) + 
-  geom_sf(data = ireland_outline, fill = NA, color = "black", size = 1) + 
-  labs(title = "Island of Ireland with Outline") +
-  theme_minimal() +
-  theme(legend.position = "none")  # Optional: Remove the legend
-
-# Plot just the outline of Ireland (without counties)
-ggplot() +
-  geom_sf(data = ireland_outline, fill = NA, color = "black") + 
-  labs(title = "Outline of Ireland") +
-  theme_minimal()
-
-# Save the Ireland outline as a shapefile
-st_write(ireland_outline, "1.data/1.2.processed/ireland_outline.shp")
+# save corine 
+save(corine, file = "1.data/1.2.processed/corine.RData")
+st_write(corine, "1.data/1.2.processed/corine.gpkg", layer = "corine", driver = "GPKG")
 
 
 ###########################################################################
+
+
+view(corine)
+plot(st_geometry(corine), main = "Corine Land Cover 2018")
+#plot by colour
+plot(st_geometry(corine), col = corine$RGB, main = "Corine Land Cover 2018")
+# plot by label 1
+
+plot(st_geometry(corine), col = as.factor(corine$LABEL1), main = "Corine Land Cover 2018 by LABEL2")
+legend("topright", legend = unique(corine$LABEL2), fill = unique(as.factor(corine$LABEL2)), cex = 0.7)
+
+
+class(corine)
+str(corine)

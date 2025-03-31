@@ -34,4 +34,8 @@ widecorine_data <- widecorine_data %>%
                                    "F521", "F522", "F523")], 1, function(x) paste(na.omit(x), collapse = "_"))
 
 
+<<<<<<< Updated upstream
 # show all unqiue in corrine  
+=======
+show all unqiue in corrine  
+>>>>>>> Stashed changes

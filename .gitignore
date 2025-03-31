@@ -62,8 +62,11 @@ Thumbs.db     # Windows
 *.bak          # Backup files
 *.tmp          # Temporary files
 *.swp          # Swap files (created by editors like vim)
+<<<<<<< Updated upstream
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021.gdb/a00000001.gdbtable
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021.gdb/a00000009.gdbtable
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021_shapefiles/Combined_Grid_Square_2021.dbf
 1.data/1.2.processed/corine.RData
 1.data/1.2.processed/corine.gpkg
+=======
+>>>>>>> Stashed changes
