@@ -1,16 +1,15 @@
-# set working directory
-setwd('C:/R')
+
 
 # load packages
 library('unmarked')
 library('AICcmodavg')
 
 # read in detection/non-detection data
-pm <- read.csv("pinemarten201520182020noname.csv")
+pm <- read.csv("6.provided-scripts/pinemarten201520182020noname.csv")
 pm <- as.matrix(pm)
-g <- read.csv("greysquirrel201520182020noname.csv")
+g <- read.csv('6.provided-scripts/greysquirrel201520182020noname.csv')
 g <- as.matrix(g)
-r <- read.csv("redsquirrel201520182020noname.csv")
+r <- read.csv("6.provided-scripts/redsquirrel201520182020noname.csv")
 r <- as.matrix(r)
 
 # create list with three species detection/non-detection data

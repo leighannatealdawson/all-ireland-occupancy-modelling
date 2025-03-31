@@ -52,6 +52,7 @@ print("Libraries loaded successfully.")
 # Example paths - adjust these to your data locations
 
 
+
 ######################################################################
 # Load CORINE Land Cover data for Ireland from 2018 # 
 # Data source: https://land.copernicus.eu/en/products/corine-land-cover/clc2018
