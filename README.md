@@ -1,5 +1,5 @@
 # PhD Thesis: Human-Wildlife Conflict: Perception Versus Reality
-
+##### TO BE UPDATED #####
 ## Chapter 2: All-Ireland Occupancy Modeling of Pine Martens
 In Chapter 2, the study uses **occupancy modeling** to evaluate the distribution of **pine martens** across all of Ireland. The aim is to assess how habitat characteristics and human population density influence the occurrence of pine martens across all of the island of Ireland
 
@@ -62,6 +62,3 @@ To begin, clone this repository to your local machine using Git:
 
 ```bash
 git clone <Copyright (c) 2025 Leighanna Teal Dawson (https://github.com/leighannatealdawson)
->
-
-
