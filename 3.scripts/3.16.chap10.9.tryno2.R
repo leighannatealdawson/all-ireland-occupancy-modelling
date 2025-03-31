@@ -183,29 +183,46 @@ library(AICcmodavg)
 system.time(gof.boot <- mb.gof.test(fm23, nsim = 10, parallel=FALSE))  # ~~~ for testing
 gof.boot
 print("Done")
+R.version.string
 
 datax <- slot(fm23, "data")  # Replace "data" with the actual slot name
 summary(datax) 
 
 # Create new covariates for prediction ('prediction covs')
-orig.urban <- seq(200, 2500,,100)    # New covs for prediction
-orig.forest <- seq(0, 100,,100)
-orig.date <- seq(15, 110,,100)
-orig.duration <- seq(100, 550,,100)
+
+summary(orig.urban)
+data.frame(
+  Variable = c("Urban", "Forest", "Date", "Duration"),
+  Min = c(min(urban.orig), min(forest.orig), min(date.orig), min(dur.orig)),
+  Max = c(max(urban.orig), max(forest.orig), max(date.orig), max(dur.orig))
+)
+
+# note layout is seq(min, max ,, interval)
+orig.urban <- seq(0, 1, length.out =100)    # New covs for prediction
+orig.forest <- seq(0, 1, length.out =100)
+orig.date <- seq(1, 3, length.out =100)
+orig.duration <- seq(0, 14, length.out =100)
+
+
+
+View(orig.urban)
 ep <- (orig.urban - means[1]) / sds[1] # Standardise them like actual covs
 fp <- (orig.forest - means[2]) / sds[2]
 dp <- (orig.date - means[3]) / sds[3]
 durp <- (orig.duration - means[4]) / sds[4]
+View(newData)
 
-# Obtain predictions
+# Obtain predictions using model 23
 newData <- data.frame(urban=ep, forest=0)
-pred.occ.urban <- predict(fm20, type="state", newdata=newData, appendData=TRUE)
+pred.occ.urban <- predict(fm23, type="state", newdata=newData, appendData=TRUE)
 newData <- data.frame(urban=0, forest=fp)
-pred.occ.forest <- predict(fm20, type="state", newdata=newData, appendData=TRUE)
+pred.occ.forest <- predict(fm23, type="state", newdata=newData, appendData=TRUE)
 newData <- data.frame(date=dp, dur=0)
-pred.det.date <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
+pred.det.date <- predict(fm23, type="det", newdata=newData, appendData=TRUE)
 newData <- data.frame(date=0, dur=durp)
 pred.det.dur <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
+
+
 
 # Plot predictions against unstandardized 'prediction covs'
 op <- par(mfrow = c(2,2), mar = c(5,5,2,3), cex.lab = 1.2)
@@ -265,17 +282,21 @@ matpoints(as.matrix(data[, 13:15]), as.matrix(data[, 10:12]), pch="+", cex=1)
 par(op)
 
 # Load the Swiss landscape data from unmarked
-data(Switzerland)             # Load Swiss landscape data in unmarked
-CH <- Switzerland
+data(Switzerland)   
+View(Switzerland)  
+View(PredCH)
+# Load Northern Ireland data 
+CH <- merge1km
+#use my Northern ireland data 
 
 # Get predictions of occupancy prob for each 1km2 quadrat of Switzerland
 newData <- data.frame(urban = (CH$urban - means[1])/sds[1],
     forest = (CH$forest - means[2])/sds[2])
-predCH <- predict(fm20, type="state", newdata=newData)
+predCH <- predict(fm23, type="state", newdata=newData)
 
 # Prepare Swiss coordinates and produce map
 library(raster)
-# library(rgdal)  # ~~~~ not necessary ~~~~
+#library(rgdal)  # ~~~~ not necessary ~~~~
 
 # Define new data frame with coordinates and outcome to be plotted
 PARAM <- data.frame(x = CH$x, y = CH$y, z = predCH$Predicted)
@@ -283,7 +304,7 @@ r1 <- rasterFromXYZ(PARAM)     # convert into raster object
 
 # Mask quadrats with urban greater than 2250
 urban <- rasterFromXYZ(cbind(CH$x, CH$y, CH$urban))
-urban[urban > 2250] <- NA
+urban[urban > 1] <- NA
 r1 <- mask(r1, urban)
 
 # Plot species distribution map (Fig. 10-14 left)
