@@ -3,6 +3,8 @@
 
 # Load necessary libraries
 library(sf)
+library(dplyr)
+
 
 # import data 
 
@@ -80,22 +82,35 @@ View(irishgrid10kmwithDD)
 merge1km <- merge(corine1km, irishgrid1kmwithDD, by = "gridid")
 merge10km <- merge(corine10km, irishgrid10kmwithDD, by = "gridid")
 View(merge10km)
+View(merge1km)
+############################################################################################
+
+
+# List of columns to sum
+selected_cols <- c("sum_Shape_Area", "sum_Area_SQUAREKILOMETERS", "Polygon_Count",
+                   "X231", "X243", "X312", "X324", "X412", "X512", "X111", "X112", 
+                   "X121", "X142", "X311", "X313", "X321", "X322", "X332", "X333", 
+                   "X122", "X211", "X242", "X421", "X423", "X522", "X131", "X411", 
+                   "X331", "X521", "X133", "X511", "X334", "X124", "X141", "X222", 
+                   "X132", "X123", "NA.", "total", "artificial_surfaces", 
+                   "agricultural_surfaces", "forested_and_semi_natural", 
+                   "wetlands", "water_bodies", "urban", "forest", "scrub")
+
+# Summing the selected columns per gridid
+merge10km_summary <- merge10km %>%
+  group_by(gridid) %>%
+  summarise(across(all_of(selected_cols), sum, na.rm = TRUE), .groups = "drop")
+
+# Print the summarized data
+print(merge10km_summary)
+
+merge10km_summary_DD <- merge(merge10km_summary, irishgrid10kmwithDD, by = "gridid")
+
+View(merge10km_summary_DD)
+
 ############################################################################################
 # save data as compile covariate data 
 write.csv(merge1km, "1.data/1.3.processedinarc/compiled1km.csv", row.names = FALSE)
-write.csv(merge10km, "1.data/1.3.processedinarc/compiled10km.csv", row.names = FALSE)
+write.csv(merge10km_summary_DD, "1.data/1.3.processedinarc/compiled10km.csv", row.names = FALSE)
 
 ##############################################################################################
-# merge PA Pm data with merged data 
-View(merge1km)
-# Import PA data
-PA_data_NI_1km <- read.csv("1.data/1.2.processed/PA_data_NI_1km.csv")
-View(PA_data_NI_1km)
-PA_data_NI_1km$gridid <- PA_data_NI_1km$X1km_square
-# Merge PA data with the 1km merged data, keeping all rows in PA_data_NI_1km
-final_merge1km <- merge(merge1km, PA_data_NI_1km, by = "gridid", all.x = TRUE)
-
-# View the final merged data
-View(final_merge1km)  # note this final df should have 87 thousand rows 
-
-# Save the final merged data
