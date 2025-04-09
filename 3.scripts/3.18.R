@@ -1,4 +1,5 @@
-rm(list = ls()) # Clear the workspace
+#'# Using Landcovermetrics to calculate landcover metrics for each camera trap site within a bufer 
+
 # Load Required Libraries
 library(raster)
 library(landscapemetrics)
@@ -24,19 +25,12 @@ plot(IrelandLCM)
 ####################################################################################
 ## Load site data
 cams <- read.csv("1.data/1.2.processed/paandhabitat.csv")
-View(cams)
-# Convert Site Data to Spatial Points
-#cams.sp <- cams
-#coordinates(cams.sp) <- ~long+lat
-#proj4string(cams.sp) <- CRS("+proj=longlat +datum=WGS84 +no_defs")
 
 ####################################################################################
 # plot overlapping to check projections 
 
-
 # Convert Site Data to Spatial Points
-cams.sp <- st_as_sf(cams, coords = c("long", "lat"), crs = 4326)
-
+cams.sp <- st_as_sf(cams, coords = c("long", "lat"), crs = 4326) # dont worry change to ITM later 
 
 # Convert raster to dataframe
 IrelandLCM_df <- as.data.frame(IrelandLCM, xy = TRUE, na.rm = TRUE)
@@ -47,7 +41,7 @@ cams.sp_df <- as.data.frame(cams.sp)
 plot(IrelandLCM)
 plot(cams.sp, add=TRUE, col = "#000000", pch = 20, cex = 1.5)
 
-# reproject to 2157 
+# reproject to 2157 to match raster later as itll need to be in m not degrees 
 cams.sp <- st_transform(cams.sp, crs = 2157)
 
 # Rename the layer column as tif layer doesnt keep correct col names 
@@ -134,16 +128,10 @@ colnames(value_counts_df) <- c("LandCoverClass", "Count")
 # Display the result
 View(value_counts_df)
 
-
 # Reproject Raster to Metres (ITM75)
 IrelandLCMepsg2157 <- projectRaster(IrelandLCM_temp, crs = CRS("+init=epsg:2157"))
 #ensure landcover is still as interger 
 IrelandLCMepsg2157 <- as.integer(IrelandLCMepsg2157)
-
-# Get Unique Values from Raster
-#unique_values <- unique(values(IrelandLCM))
-#sorted_unique_values <- sort(unique_values)
-#print(sorted_unique_values)
 
 # Recheck Landscape Metrics Requirements
 check_landscape(IrelandLCMepsg2157)
@@ -163,17 +151,8 @@ leaflet() %>%
   setView(lng = mean(cams$long), lat = mean(cams$lat), zoom = 7)
 # its as expected 
 
-#############################################################################################################
-# Check and Transform CRS of Points
-#crs(IrelandLCM_reclassed)
-#crs(cams.sp)
-#cams.sp <- spTransform(cams.sp, CRS(proj4string(IrelandLCM_reclassed)))
-#crs(cams.sp)
-
 #################################################################################################################
 # rename landcover type from temp_code to clc_code 
-
-# rename landcover type -exclusing covertypes not present in ireland 
 
 # Define the mapping from temp_code to clc_code
 temp_to_clc <- matrix(c(
@@ -218,12 +197,7 @@ temp_to_clc <- matrix(c(
 nrow(temp_to_clc) # 35 rows in matrix
 # Rename raster landcover classes 
 IrelandLCM_reclassed_CLC <- reclassify(IrelandLCMepsg2157, temp_to_clc)
-check 
 
-#unique_values <- unique(values(IrelandLCM_reclassed_CLC))
-#sorted_unique_values <- sort(unique_values)
-#print(sorted_unique_values)
-# make table of count of unique classes in raster 
 # Calculate the frequency of each unique value in the raster
 unique_values <- values(IrelandLCM_reclassed_CLC)
 # Create a frequency table (data frame) of unique values and their counts
@@ -235,43 +209,33 @@ colnames(value_counts_df) <- c("LandCoverClass", "Count")
 # Display the result
 View(value_counts_df)
 
-
 check_landscape(IrelandLCM_reclassed_CLC)
 ####################################################################################################
 # Sample Landscape Metrics
-LCM_5kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = 150, level = "patch", metric = "area")
-print("done")
-View(LCM_5kmbuffer_allsites)
-
-#crs(IrelandLCM_reclassed_CLC)
-#crs(cams.sp)
-
+LCM_5kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = 1261.57, level = "patch", metric = "area")
 
 # Process Sampled Data
 df <- LCM_5kmbuffer_allsites %>%
   group_by(plot_id, class) %>%
   summarise(area = sum(value)) %>%
   spread(class, area)
-View(df)
 
 # Calculate Total Cover per Row
 df$total <- rowSums(df[ , !(names(df) %in% c("plot_id"))], na.rm = TRUE)
-View(df)
 
 # Calculate Proportion of Each Class
 df[is.na(df)] <- 0
 df[ , !(names(df) %in% c("plot_id", "total"))] <- df[ , !(names(df) %in% c("plot_id", "total"))] / df$total
-df[,"112"] <- df[,"112"] / df[,"total"]
+
 
 # Merge with Site Data
 cams <- rename(cams, plot_id = observation_id)
 lcm_df <- merge(df, cams, by = "plot_id")
-View(lcm_df)
+
 
 # Visualize Data
 range(df$"311", na.rm = TRUE)
-range(df$"312", na.rm = TRUE)
-hist(df$"312")
+hist(df$"311")
 
 ##########################################################################################
 
