@@ -48,6 +48,9 @@ colnames(pmpresenceonly)
 pmandhabitat <- merge(habitatinfo, pmpresenceonly, by = "observation_id")
 view(pmandhabitat)
 
+#save data 
+write.csv(pmandhabitat, "1.data/1.2.processed/paandhabitat.csv", row.names = FALSE)
+
 # Create map of data
 leaflet(data = pmandhabitat) %>%
   addTiles() %>%

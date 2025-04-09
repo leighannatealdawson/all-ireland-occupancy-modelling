@@ -114,3 +114,4 @@ write.csv(merge1km, "1.data/1.3.processedinarc/compiled1km.csv", row.names = FAL
 write.csv(merge10km_summary_DD, "1.data/1.3.processedinarc/compiled10km.csv", row.names = FALSE)
 
 ##############################################################################################
+ 

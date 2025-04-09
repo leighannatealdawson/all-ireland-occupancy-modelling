@@ -55,6 +55,12 @@ PA_data_NI_1km_with_cov <- data_full %>%
 # View the resulting dataframe to check
 View(PA_data_NI_1km_with_cov)
 
+########################################################################################
+ensure round data long and lat are rounded to same dp 
+View(merge1km$)
+merge1km <- round(merge1km$x, digits = 3)
+merge1km <- round(merge1km$y, digits = 3)
+str(merge1km)
 
 # 10.9 Distribution modeling and mapping of Swiss red squirrels
 # =============================================================
@@ -179,14 +185,13 @@ print(aic_results)  # Best model is at the top which is fm23
 #########################################################################################
 library(AICcmodavg)
 
-# system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000, parallel=FALSE))
-system.time(gof.boot <- mb.gof.test(fm23, nsim = 10, parallel=FALSE))  # ~~~ for testing
+# system.time(gof.boot <- mb.gof.test(fm20, nsim = 1000, parallel=FALSE)) >>>
+gof.boot <- mb.gof.test(fm23, nsim = 10, parallel=FALSE)  # ~~~ for testing
 gof.boot
 print("Done")
 R.version.string
 
-datax <- slot(fm23, "data")  # Replace "data" with the actual slot name
-summary(datax) 
+
 
 # Create new covariates for prediction ('prediction covs')
 
@@ -206,13 +211,14 @@ orig.duration <- seq(0, 14, length.out =100)
 
 
 View(orig.urban)
+nrow(orig.date)
 ep <- (orig.urban - means[1]) / sds[1] # Standardise them like actual covs
 fp <- (orig.forest - means[2]) / sds[2]
 dp <- (orig.date - means[3]) / sds[3]
 durp <- (orig.duration - means[4]) / sds[4]
 View(newData)
 
-# Obtain predictions using model 23
+# Obtain predictions using model 23 >>>
 newData <- data.frame(urban=ep, forest=0)
 pred.occ.urban <- predict(fm23, type="state", newdata=newData, appendData=TRUE)
 newData <- data.frame(urban=0, forest=fp)
@@ -220,7 +226,7 @@ pred.occ.forest <- predict(fm23, type="state", newdata=newData, appendData=TRUE)
 newData <- data.frame(date=dp, dur=0)
 pred.det.date <- predict(fm23, type="det", newdata=newData, appendData=TRUE)
 newData <- data.frame(date=0, dur=durp)
-pred.det.dur <- predict(fm20, type="det", newdata=newData, appendData=TRUE)
+pred.det.dur <- predict(fm23, type="det", newdata=newData, appendData=TRUE)
 
 
 
@@ -285,15 +291,21 @@ par(op)
 data(Switzerland)   
 View(Switzerland)  
 View(PredCH)
+
+turn all x coodinates into positive number to test?? 
+
+
+View(merge1km)
 # Load Northern Ireland data 
 CH <- merge1km
+# Note my data is in WGS 1984 but model input requires EPSG:2056
 #use my Northern ireland data 
 
 # Get predictions of occupancy prob for each 1km2 quadrat of Switzerland
 newData <- data.frame(urban = (CH$urban - means[1])/sds[1],
     forest = (CH$forest - means[2])/sds[2])
 predCH <- predict(fm23, type="state", newdata=newData)
-
+View(PARAM)
 # Prepare Swiss coordinates and produce map
 library(raster)
 #library(rgdal)  # ~~~~ not necessary ~~~~
