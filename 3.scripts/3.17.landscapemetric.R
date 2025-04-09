@@ -15,63 +15,34 @@ library(dplyr)
 library(sf)
 library(terra)
 library(stars)
-
 library(raster)
 library(ggplot2)
 library(ggspatial)
-
-# Import the CORINE land cover data in GeoTIFF format
-IrelandLCM <- raster("1.data/1.1.raw/U2018_CLC2018_V2020_20u1_all_Ireland.tif")
-crs(IrelandLCM)
-IrelandLCM2 <- raster("1.data/1.2.processed/allirelandlcm.tif") 
-# Laod site data
-cams <- read.csv("1.data/1.2.processed/paandhabitat.csv")
-head(cams)
-###########################################################################
-PLOT 
-PLOT
-# Load required packages
 library(raster)
 library(sp)
 library(leaflet)
 
-# Load CORINE raster
+# Import the CORINE land cover data in GeoTIFF format
 IrelandLCM <- raster("1.data/1.1.raw/U2018_CLC2018_V2020_20u1_all_Ireland.tif")
-
-# Check and assign CRS if not correct
-crs(IrelandLCM)  
-
-
-# Load camera trap points
+crs(IrelandLCM)
+# Laod site data
 cams <- read.csv("1.data/1.2.processed/paandhabitat.csv")
+
+###########################################################################
 
 # Convert to spatial points
 cams.sp <- cams
 coordinates(cams.sp) <- ~long+lat
 proj4string(cams.sp) <- CRS("+proj=longlat +datum=WGS84 +no_defs")
 
-
-
-
-# Load raster (already in WGS 84)
-IrelandLCM <- raster("1.data/1.1.raw/U2018_CLC2018_V2020_20u1_all_Ireland.tif")
-
-# Load camera points
-cams <- read.csv("1.data/1.2.processed/paandhabitat.csv")
-cams.sp <- cams
-coordinates(cams.sp) <- ~long+lat
-proj4string(cams.sp) <- CRS("+proj=longlat +datum=WGS84 +no_defs")
-
-
-# check my tif for correct requirements  
+# check my tif for correct requirements and understand layout 
 check_landscape(IrelandLCM)
 
 # Get unique values from the raster
 unique_values <- unique(values(IrelandLCM))
-# Sort the unique values in ascending order
 sorted_unique_values <- sort(unique_values)
-# Print the sorted unique values
 print(sorted_unique_values)
+
 # ensure CLC classes are integers (1, 2, 3, ...) 
 IrelandLCM <- as.integer(IrelandLCM)
 
@@ -81,17 +52,9 @@ IrelandLCM <- as.integer(IrelandLCM)
 # 3. Landscape metrics describe categorical landscapes, that means that your landscape needs to be classified 
 ## Warning if over 30 classes (i have 44? )
 
-#change crs to metres (ITM75  )
+# change crs to metres (ITM75)
 IrelandLCMepsg2157 <- projectRaster(IrelandLCM, crs = CRS("+init=epsg:2157")) # ITM
 IrelandLCMepsg2157 <- as.integer(IrelandLCMepsg2157) # Ensure integer values
-view class in raster 
-# Get unique classes in the raster
-unique_classes <- sort(unique(values(IrelandLCM_reclassed)))
-print(unique_classes)
-count<- length(unique_classes) # Count the number of unique classes
-print(count)
-rename the classes now as interger 
-library(raster)
 
 # Define the mapping as a matrix: from → to
 CLC_legend <- matrix(c(
@@ -145,7 +108,7 @@ CLC_legend <- matrix(c(
 # Reclassify raster
 IrelandLCM_reclassed <- reclassify(IrelandLCMepsg2157, CLC_legend)
 
-
+# recheck landscape metrics requirements
 check_landscape(IrelandLCM_reclassed)
 
 # Now plot the to check reprojection
@@ -158,6 +121,30 @@ leaflet() %>%
   addRasterImage(IrelandLCM_small, colors = terrain.colors(100), opacity = 0.6) %>%
   addCircleMarkers(data = cams.sp, color = "red", radius = 3, label = ~as.character(Site)) %>%
   setView(lng = mean(cams$long), lat = mean(cams$lat), zoom = 7)
+
+# Plot with ggplot2
+ggplot() +
+  annotation_map_tile(type = "osm") +  # Add OpenStreetMap background
+  geom_sf(data = cams.sp, aes(geometry = geometry), color = "red", size = 2) +
+  theme_minimal() +
+  labs(title = "Spatial Points with Background Map", x = "Longitude", y = "Latitude")
+
+# Convert Site Data to Spatial Points
+cams.sp <- st_as_sf(cams, coords = c("long", "lat"), crs = 4326)
+library(prettymapr)
+install.packages("prettymapr")
+# Plot with ggplot2
+ggplot() +
+  annotation_map_tile(type = "osm") +  # Add OpenStreetMap background
+  geom_sf(data = cams.sp, aes(geometry = geometry), color = "red", size = 2) +
+  theme_minimal() +
+  labs(title = "Spatial Points with Background Map", x = "Longitude", y = "Latitude")
+
+
+
+plot(IrelandLCM_reclassed)
+plot(cams.sp, col="red")
+
 
 crs(IrelandLCM_reclassed) # Check the CRS of the raster
 crs(cams.sp) # Check the CRS of the points

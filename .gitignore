@@ -62,11 +62,22 @@ Thumbs.db     # Windows
 *.bak          # Backup files
 *.tmp          # Temporary files
 *.swp          # Swap files (created by editors like vim)
-<<<<<<< Updated upstream
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021.gdb/a00000001.gdbtable
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021.gdb/a00000009.gdbtable
 1.data/1.1.raw/humanpopulationdata/Grid_Square_2021_shapefiles/Combined_Grid_Square_2021.dbf
 1.data/1.2.processed/corine.RData
 1.data/1.2.processed/corine.gpkg
-=======
->>>>>>> Stashed changes
+
+# Additional ArcGIS/Geospatial binary files not yet ignored
+*.ovr           # Raster overview files
+*.adf           # Arc/Info Binary Grid files
+*.sta           # Arc/Info Statistics
+*.vat           # Arc/Info Value Attribute Table
+*.hdr           # Raster header files
+
+# Erdas Imagine / ArcGIS-specific info
+*.nit           # Info table (often paired with .dat)
+*.dat           # Associated with .nit and other raster formats
+arc.dir         # Info directory index (Arc/Info)
+
+

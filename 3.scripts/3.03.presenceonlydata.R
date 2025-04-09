@@ -46,7 +46,16 @@ colnames(pmpresenceonly)
 
 # Merge the two data frames
 pmandhabitat <- merge(habitatinfo, pmpresenceonly, by = "observation_id")
+
 view(pmandhabitat)
+
+Create col of present absence at each site 
+
+
+# Create a new column "PA" and set it to 1 if any of the Day.1 to Day.14 columns are 1, otherwise set it to 0
+pmandhabitat$PA <- ifelse(rowSums(pmandhabitat[, c("Day.1", "Day.2", "Day.3", "Day.4", "Day.5", "Day.6", "Day.7",
+ "Day.8", "Day.9", "Day.10", "Day.11", "Day.12", "Day.13", "Day.14")], na.rm = TRUE) > 0, 1, 0)
+
 
 #save data 
 write.csv(pmandhabitat, "1.data/1.2.processed/paandhabitat.csv", row.names = FALSE)
