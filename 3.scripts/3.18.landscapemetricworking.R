@@ -15,6 +15,8 @@ library(ggplot2)
 library(ggspatial)
 library(leaflet)
 library(prettymapr)
+install.packages("ggmap")
+library(ggmap)
 ####################################################################################
 # Import Data
 ## Import CORINE land cover data in GeoTIFF format
@@ -32,17 +34,42 @@ cams <- read.csv("1.data/1.2.processed/paandhabitat.csv")
 # Convert Site Data to Spatial Points
 cams.sp <- st_as_sf(cams, coords = c("long", "lat"), crs = 4326) # dont worry change to ITM later 
 
+#Check projection of just points 
+leaflet() %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addCircleMarkers(data = st_transform(cams.sp, 4326),
+                   radius = 4, color = "red") 
 # Convert raster to dataframe
 IrelandLCM_df <- as.data.frame(IrelandLCM, xy = TRUE, na.rm = TRUE)
 #class(IrelandLCM_df)
 cams.sp_df <- as.data.frame(cams.sp)
-
+?plot
 # plot NOTE: when plotting like this points may not voerlap with raster due to mixing raster and sf?? 
 plot(IrelandLCM)
 plot(cams.sp, add=TRUE, col = "#000000", pch = 20, cex = 1.5)
+plot points with another bacgrkound map from stock 
 
 # reproject to 2157 to match raster later as itll need to be in m not degrees 
 cams.sp <- st_transform(cams.sp, crs = 2157)
+
+library(tmap)
+
+tmap_mode("view")
+
+tm_shape(cams.sp %>% st_transform(4326)) +  # must be WGS84
+  tm_basemap(server = "OpenStreetMap") +
+  tm_dots(col = "red", size = 0.1) +
+  tm_layout(title = "Camera Traps with OSM Basemap (Interactive)")
+
+
+# Ensure tmap is in interactive mode
+tmap_mode("view")
+
+# Plot camera trap locations with a basemap
+tm_shape(cams.sp %>% st_transform(4326)) +  # Transform to WGS84 for compatibility with basemap
+  tm_basemap(server = "OpenStreetMap") +    # Add OpenStreetMap as the basemap
+  tm_dots(col = "red", size = 0.1) +        # Plot camera trap points as red dots
+  tm_layout(title = "Camera Traps with OSM Basemap (Interactive)") # Add a title
 
 # Rename the layer column as tif layer doesnt keep correct col names 
 colnames(IrelandLCM_df) <- c("landcover", "x", "y")
@@ -51,10 +78,12 @@ head(IrelandLCM_df)
 # plot both layers as csv using ggplot2 to check overlap as expected 
 ggplot() +
   geom_raster(data = IrelandLCM_df, aes(x = x, y = y, fill = landcover)) +
-  geom_point(data = cams, aes(x = long, y = lat), color = "black", size = 2) +
+  geom_point(data = cams, aes(x = long, y = lat), color = "black", size = 2)   +
   coord_sf(xlim = c(-11, -5), ylim = c(51, 56)) +
   theme_minimal() +
   labs(title = "Camera Points over CORINE Land Cover")
+
+plot 
 
 # this plots as expected with no reporjection needed. i think??? 
 ##############################################################################
@@ -210,9 +239,59 @@ colnames(value_counts_df) <- c("LandCoverClass", "Count")
 View(value_counts_df)
 
 check_landscape(IrelandLCM_reclassed_CLC)
-####################################################################################################
+
+
+plot(IrelandLCM_reclassed_CLC)
+points(cams.sp, col = "red", pch = 20, cex = 1.5)
+#############################################################################################################
+# Run landscape metrics 
+##################################################################################################
+# Run landscape metrics using 5km buffer 
+# Convert 10km to square meters and set buffer size
+buffer_km <- 10
+buffer_m <- buffer_km * 10^6
+radius_buffer <- sqrt(buffer_m / pi)
+radius_buffer    
+
 # Sample Landscape Metrics
-LCM_5kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = 1261.57, level = "patch", metric = "area")
+LCM_10kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = radius_buffer, level = "patch", metric = "area")
+
+# Process Sampled Data
+df <- LCM_10kmbuffer_allsites %>%
+  group_by(plot_id, class) %>%
+  summarise(area = sum(value)) %>%
+  spread(class, area)
+
+# Calculate Total Cover per Row
+df$total <- rowSums(df[ , !(names(df) %in% c("plot_id"))], na.rm = TRUE)
+
+# Calculate Proportion of Each Class
+df[is.na(df)] <- 0
+df[ , !(names(df) %in% c("plot_id", "total"))] <- df[ , !(names(df) %in% c("plot_id", "total"))] / df$total
+
+View(df)
+# Merge with Site Data
+cams <- rename(cams, plot_id = observation_id)
+lcm_df10km <- merge(df, cams, by = "plot_id")
+
+
+# Visualize Data
+range(df$"311", na.rm = TRUE)
+hist(df$"311")
+
+# Save the data frame to a CSV file
+write.csv(lcm_df10km, "1.data/1.2.processed/lcm_df10km.csv", row.names = FALSE)
+View(lcm_df10km)
+####################################################################################################
+# Run landscape metrics using 5km buffer 
+# Convert 5km to square meters and set buffer size
+buffer_km <- 5
+buffer_m <- buffer_km * 10^6
+radius_buffer <- sqrt(buffer_m / pi)
+radius_buffer
+
+# Sample Landscape Metrics
+LCM_5kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = radius_buffer, level = "patch", metric = "area")
 
 # Process Sampled Data
 df <- LCM_5kmbuffer_allsites %>%
@@ -230,14 +309,52 @@ df[ , !(names(df) %in% c("plot_id", "total"))] <- df[ , !(names(df) %in% c("plot
 
 # Merge with Site Data
 cams <- rename(cams, plot_id = observation_id)
-lcm_df <- merge(df, cams, by = "plot_id")
+lcm_df5km <- merge(df, cams, by = "plot_id")
 
 
 # Visualize Data
 range(df$"311", na.rm = TRUE)
 hist(df$"311")
 
+# Save the data frame to a CSV file
+write.csv(lcm_df5km, "1.data/1.2.processed/lcm_df5km.csv", row.names = FALSE)
 ##########################################################################################
+# Run landscape metrics using 5km buffer 
+# Convert 5km to square meters and set buffer size
+buffer_km <- 1
+buffer_m <- buffer_km * 10^6
+radius_buffer <- sqrt(buffer_m / pi)
+radius_buffer
 
+# Sample Landscape Metrics
+LCM_1kmbuffer_allsites <- sample_lsm(IrelandLCM_reclassed_CLC, cams.sp, size = radius_buffer, level = "patch", metric = "area")
+
+# Process Sampled Data
+df <- LCM_1kmbuffer_allsites %>%
+  group_by(plot_id, class) %>%
+  summarise(area = sum(value)) %>%
+  spread(class, area)
+
+# Calculate Total Cover per Row
+df$total <- rowSums(df[ , !(names(df) %in% c("plot_id"))], na.rm = TRUE)
+
+# Calculate Proportion of Each Class
+df[is.na(df)] <- 0
+df[ , !(names(df) %in% c("plot_id", "total"))] <- df[ , !(names(df) %in% c("plot_id", "total"))] / df$total
+
+
+# Merge with Site Data
+cams <- rename(cams, plot_id = observation_id)
+lcm_df1km <- merge(df, cams, by = "plot_id")
+
+
+# Visualize Data
+range(df$"311", na.rm = TRUE)
+hist(df$"311")
+
+# Save Data 
+# Save the data frame to a CSV file
+write.csv(lcm_df1km, "1.data/1.2.processed/lcm_df1km.csv", row.names = FALSE)
+################################################################################################################
 
 
