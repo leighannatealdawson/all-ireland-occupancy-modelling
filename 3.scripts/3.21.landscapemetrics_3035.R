@@ -20,7 +20,7 @@ LCM_3035 <- raster("1.data/1.1.raw/corine_raster/DATA/U2018_CLC2018_V2020_20u1.t
 plot(LCM_3035)
 crs(LCM_3035)
  
-crop raster 
+
 # Crop the raster to the extent of Ireland
 ireland_extent <- extent(2500000, 3750000, 2500000, 4500000) # Define the extent of Ireland in EPSG:3035
 crop_LCM_3035 <- crop(LCM_3035, ireland_extent) # Crop the raster to the extent of Ireland 
