@@ -6,12 +6,9 @@ library(sf)
 library(dplyr)
 library(tidyr)
 
-setwd("C:/Users/twininjo/Documents/R/Leighanna_Dawson_marten_ireland")
 
 #read in Corine Ireland and UK raster
-ireland <- raster("C:/Users/twininjo/Downloads/Corine_data_Ireland/Results/U2018_CLC2018_V2020_20u1/U2018_CLC2018_V2020_20u1/U2018_CLC2018_V2020_20u1.tif")
-
-# plot it
+ireland <- raster("1.data/1.1.raw/corine_raster/DATA/U2018_CLC2018_V2020_20u1.tif") #original raster downloaded from copernicus in epsg 3035 
 plot(ireland)
 
 # check classes 
@@ -21,8 +18,8 @@ plot(ireland)
 crs(ireland)
 
 # read in all the cam locations
-cams <- read.csv('habitat info 2015 2018 2020 sites only.csv')
-
+cams <- read.csv("6.provided-scripts/habitatinfo201520182020sitesonly.csv")
+head(cams)
 
 # pull out coordinates of cams
 cams.sp <- cams
@@ -200,7 +197,7 @@ range(df$`Mixed forest`)
 range(df$`Moors and heathland`)
 
 test <- cbind(cams, df)
-
+View(test)
 write.csv(test,"2015-2020_allsites_corinedata_5km2_martenandsquirrelsampling_NI.csv" )
 
 
