@@ -1,0 +1,101 @@
+library(purrr)
+library(tidyr)
+library(dplyr)
+library(sf)
+library(terra)
+library(stars)
+library(ggplot2)
+library(ggspatial)
+library(leaflet)
+library(prettymapr)
+library(maptiles)
+library(raster)
+library(landscapemetrics)
+
+
+# lets extract the corine raster data for each of the 1/5/10km grid cells using landscapemetrics
+
+#import raster
+ireland <- raster("1.data/1.1.raw/corine_raster/DATA/U2018_CLC2018_V2020_20u1.tif") #original raster downloaded from copernicus in epsg 3035 
+plot(LCM_3035)
+crs(LCM_3035)
+
+# read in 10km grid 
+grid_5km <- st_read("1.data/1.3.processedinarc/5kmgridallireland.shp")
+tenkm_grid<- st_read(dsn = ".", layer = "5kmgridallireland")
+grid_5km <- st_read("C:/Users/B00997413/OneDrive - Ulster University/Documents/ArcGIS/Projects/gridtest2-4/gridtest2-4.gdb", layer = "x5kmgridgeopack")
+#save to processin arc folder 
+st_write(grid_5km, "1.data/1.3.processedinarc/5kmgridallireland_processed.gdb", delete_layer = TRUE)
+
+
+plot(grid_5km)
+st_layers("1.data/1.3.processedinarc/5kmgridallireland.shp")
+st_crs(ireland)
+st_crs(grid_5km)
+# reproject grid to match raster
+grid_5km <- st_transform(grid_5km, crs = st_crs(ireland))
+plot(ireland)
+plot(grid_5km, add=TRUE, border = "blue")
+
+# add plot ids to each grid
+nrow(grid_5km)
+grid_5km$plot_id <- c(1:3804)
+head(grid_5km)
+
+
+unique(ireland)
+##########################################################################################################
+#rename corine classes 
+create renaming matrix 
+CLC_matrix <- matrix(c(
+  1, 111,
+  2, 112,
+  3, 121,
+  4, 122,
+  5, 123,
+  6, 124,
+  7, 131,
+  8, 132,
+  9, 133,
+  10, 141,
+  11, 142,
+  12, 211,
+  16, 222,
+  18, 231,
+  20, 242,
+  21, 243,
+  23, 311,
+  24, 312,
+  25, 313,
+  26, 321,
+  27, 322,
+  29, 324,
+  30, 331,
+  31, 332,
+  32, 333,
+  33, 334,
+  35, 411,
+  36, 412,
+  37, 421,
+  39, 423,
+  40, 511,
+  41, 512,
+  42, 521,
+  43, 522,
+  44, 523
+), ncol = 2, byrow = TRUE)
+
+# Rename lcm_df columns according to CLC matrix
+rename_map <- setNames(paste0("CLC_", CLC_matrix[, 2]), CLC_matrix[, 1])
+colnames(grid_5km) <- ifelse(colnames(grid_5km) %in% names(rename_map), rename_map[colnames(grid_5km)], colnames(grid_5km))
+View(grid_5km)
+
+##########################################################################################################
+
+corrine_5km_grid_ireland <- sample_lsm(ireland, grid_5km, level = "patch", metric= "area")
+View(corrine_5km_grid_ireland)
+
+View(grid_5km)
+
+?landscapemetrics::sample_lsm
+##### try from points and extract for a square for 5km 
