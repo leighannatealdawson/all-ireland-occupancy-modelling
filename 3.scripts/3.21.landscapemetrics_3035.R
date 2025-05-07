@@ -38,7 +38,10 @@ cams.sp_3035 <- st_transform(cams.sp, crs = 3035)
 # reproject to the same as raster file directly
 cams.sp_reprojected <- st_transform(cams.sp_3035, crs = crs(crop_LCM_3035))
 
+cams.sp_reprojected <- st_transform(cams.sp_3035, crs="+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs")
 
+plot(LCM_3035)
+plot(cams.sp_reprojected, add = TRUE)
 # Simplified Plot using leaflet
 leaflet() %>%
   addTiles() %>%
@@ -152,7 +155,7 @@ View(lcm_df)
 write.csv(lcm_df, "1.data/1.2.processed/lcm_df_5km_buffer_3035.csv")
 
 ##############################################################################################################################
-# repeate for 10km buffer 
+# repeat for 10km buffer 
 # Calculate 10km buffer around each camera trap site
 buffer_km <- 10
 buffer_m <- buffer_km *10^6
@@ -187,7 +190,7 @@ colnames(lcm_df) <- ifelse(colnames(lcm_df) %in% names(rename_map), rename_map[c
 write.csv(lcm_df, "1.data/1.2.processed/lcm_df_10km_buffer_3035.csv")
 
 ############################################################################################################################
-# repeate for 1km buffer 
+# repeat for 1km buffer 
 # Calculate 1km buffer around each camera trap site
 buffer_km <- 1
 buffer_m <- buffer_km *10^6
@@ -222,3 +225,49 @@ colnames(lcm_df) <- ifelse(colnames(lcm_df) %in% names(rename_map), rename_map[c
 write.csv(lcm_df, "1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
 
 View(lcm_df)
+
+#############################################################################################################################
+#############################################################################################################################
+
+#extract landscape metrics grid for 5km 
+
+# Load the 5km grid shapefile points
+grid_5km <- st_read("1.data/1.3.processedinarc/DD5kmgridallirelandpoints.shp")
+
+crs(LCM_3035)
+# check crs
+crs(grid_5km) 
+
+# Ensure the CRS matches the raster and other spatial data
+grid_5km <- st_transform(grid_5km, crs = st_crs(crop_LCM_3035))
+
+#recheck crs
+crs(grid_5km) 
+
+# Plot the grid to verify alignment
+plot(st_geometry(grid_5km), add = TRUE, col = "blue", pch = 20)
+plot(crop_LCM_3035, add = TRUE, col = "grey", alpha = 0.5)
+plot(cams.sp_reprojected, add = TRUE, col = "red", pch = 20)
+# Extract landscape metrics for the 5km grid
+grid_5km_metrics <- sample_lsm(crop_LCM_3035, grid_5km, size = 5000, level = "patch", metric = "area")
+
+# Process the extracted data
+grid_df <- grid_5km_metrics %>%
+  group_by(plot_id, class) %>%
+  summarise(area = sum(value)) %>%
+  spread(class, area)
+
+# Calculate total cover per row
+grid_df$total <- rowSums(grid_df[ , !(names(grid_df) %in% c("plot_id"))], na.rm = TRUE)
+
+# Calculate proportion of each class
+grid_df[is.na(grid_df)] <- 0
+grid_df[ , !(names(grid_df) %in% c("plot_id", "total"))] <- grid_df[ , !(names(grid_df) %in% c("plot_id", "total"))] / grid_df$total
+
+# Rename columns using the CLC matrix
+colnames(grid_df) <- ifelse(colnames(grid_df) %in% names(rename_map), rename_map[colnames(grid_df)], colnames(grid_df))
+
+# Save the processed data
+write.csv(grid_df, "1.data/1.2.processed/grid_5km_metrics_3035.csv")
+
+View(grid_df)
