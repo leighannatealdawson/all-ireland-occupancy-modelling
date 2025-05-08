@@ -5,6 +5,21 @@ siteCovs <- siteCovs5km
 library(GGally)
 library(corrplot)
 
+
+siteCovs$urban <- rowSums(siteCovs[, c("CLC_111", "CLC_112", "CLC_121", "CLC_122", "CLC_123", 
+                                                                           "CLC_124", "CLC_131", "CLC_132", "CLC_133", "CLC_141", 
+                                                                           "CLC_142")], na.rm = TRUE)
+
+siteCovs$agri <- rowSums(siteCovs[, c("CLC_211", "CLC_222", "CLC_231", "CLC_242", "CLC_243")], na.rm = TRUE)
+
+siteCovs$forest <- rowSums(siteCovs[, c("CLC_311", "CLC_312", "CLC_313", "CLC_321", "CLC_322",
+                                         "CLC_324", "CLC_332", "CLC_333")], na.rm = TRUE)
+
+
+
+clc_vars <- 
+
+
 # List of your CLC variable names
 clc_vars <- c("CLC_111", "CLC_112", "CLC_121", "CLC_122", "CLC_123", "CLC_124", 
               "CLC_131", "CLC_132", "CLC_133", "CLC_141", "CLC_142", "CLC_211", 

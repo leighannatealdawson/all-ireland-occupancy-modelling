@@ -237,6 +237,10 @@ grid_5km <- st_read("1.data/1.3.processedinarc/DD5kmgridallirelandpoints.shp")
 crs(LCM_3035)
 # check crs
 crs(grid_5km) 
+# Verify if LCM_3035 and grid_5km share the same CRS
+if (!st_crs(LCM_3035) == st_crs(grid_5km)) {
+  grid_5km <- st_transform(grid_5km, crs = st_crs(crop_LCM_3035))
+}
 
 # Ensure the CRS matches the raster and other spatial data
 grid_5km <- st_transform(grid_5km, crs = st_crs(crop_LCM_3035))
@@ -252,7 +256,7 @@ plot(cams.sp_reprojected, add = TRUE, col = "red", pch = 20)
 grid_5km_metrics <- sample_lsm(crop_LCM_3035, grid_5km, size = 5000, level = "patch", metric = "area")
 
 # Process the extracted data
-grid_df <- grid_5km_metrics %>%
+grid_df <- grid_5km_metrics %>% 
   group_by(plot_id, class) %>%
   summarise(area = sum(value)) %>%
   spread(class, area)
