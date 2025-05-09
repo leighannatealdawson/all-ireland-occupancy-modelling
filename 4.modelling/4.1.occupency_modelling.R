@@ -1,13 +1,12 @@
  rm(list = ls())
-
-
-
+# first atempt at occupency modelling, this needs a good but more playing around with and i want to try the AIC model selection - 09/05/2025 
 
 library(unmarked)
 library(MuMIn)
 library(AICcmodavg)
 library(ggplot2)
 library(tidyverse)
+library(AER)
 
 #notes: 
 # step by step guide to building occupancy models in unmarked
@@ -23,7 +22,7 @@ library(tidyverse)
 #' Step 9. Make predictions for marten psi (occupancy probability) across the landscape, plot them in ArcGIS
 #' Step 10. Celebrate, you did it!
 
-# consider which szie buffer we want to use for our analysis 
+# consider which szie buffer we want to use for our analysis - to be removed 
 lcm_data_1km <- read.csv("1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
 
 View(lcm_data_1km)
@@ -172,11 +171,9 @@ hist(siteCovs$mixedwood) #looks good
 hist(siteCovs$opennoneagri) # looks good
 hist(siteCovs$urban) # looks good
 
-#' as with the others? Should i consider reclassifying this land cover class?  
-
 # what about when we scale 
 hist(scale(siteCovs$agrinonpas))
-hist(scale(siteCovs$pasture)) # does this need scaling?
+hist(scale(siteCovs$pasture)) 
 hist(scale(siteCovs$conifer))
 hist(scale(siteCovs$mixedwood))
 hist(scale(siteCovs$opennoneagri))
@@ -201,7 +198,7 @@ str(obsCovs(umf2))
 #' scale so data is transformed so it has a mean of 0 and SD/unit variance of 1- we can do this in the model when using unmarked but not others
 #' with unmarked we can scale here and it will automatically scale covariates when we make predictions (this makes life easier)
 #' 
-mod1 <- occu(~ scale(occ) + year + bait
+mod1 <- occu(~ scale(occ) + scale(year) + bait
              ~ scale(agrinonpas) 
              + scale(pasture) 
              + scale(conifer) 
@@ -219,12 +216,9 @@ coef(mod1)
 
 confint(mod1, type = "state", level = 0.95)
 
-#######################
-# conduct model selection?? 
-modelList <- dredge(mod1, rank = "QAIC", fixed = "p(year)", chat = 1.77)
 
-model_list_df <- as.data.frame(modelList.fullp.nullpsi)
-  
+# stay here until you have a model you are happy with. You can either build and interpret a single global model, or you can conduct two-stage AIC-based model selection (see end of script).
+
 #####################################################################################################################
 # create marginal estimates 
 # take covariate of interest, using min and max of what we sampled and keeping all other covariates at their mean 
@@ -468,7 +462,51 @@ View(preds_df)
 
 # save to look at in GIS 
 write.csv(preds_df, "4.modelling/4.modeloutputs/predictions_allirelandmod1.csv", row.names = FALSE)
- ###### NOTe i used a 5km buffer and 10km grid to extract covariates, so we need to use a 5km landscpae grid to make this a valid pred 
+ ###### NOTE i used a 5km buffer and 10km grid to extract covariates, THIS IS WRONG I KNOW
+ # we need to use a 5km landscpae grid to make this a valid pred but cant get LCM to work. 
+
+ ############################################## *****Below here isnt something ive considered.  i need to review this section as i wanted to play with the model more beforehand 
+# what if i use two step model selection
+
+#' were making preds from out model and comparing these to out real data, looking at distrution of the detections 
+#' we get, if they are similar this is good, too similar isnt good as the model can only predicts itself. if theyre 
+#' too different this is also a huge issue. 
+ 
+#goodness of fit- for global model 
+occ_gof1 <- mb.gof.test(mod1, , nsim = 1000, plot.hist = TRUE)  
+occ_gof1
+#' 2 important values are p value and chat estimate 
+#' sig test gives idea of how well data fits the model so we want a value greater than 0.1 
+#' chatestimate is a measure of over/underdispertion (common in det/non-det data- as we usually have lots of non-det therefore overdis data)
+# we will use chat to do chat adjustments to inform the size of our confidence intervals as with overdisp data if not adjusted for everything will cme out as sig
+
+# 2 step model selection Part 1: 
+#' dreding function can be used to compare our global model, it will compareevery possible combo
+#' # first build global detection model (every cov you interest in on p)
+mod1 <- occu(~ occ + bait + year + scale(Broadleaf_and_mixed)
+             ~ 1, umf2)
+# then conduct model selection
+modelList <- dredge(mod1, rank = "QAIC", fixed = "p(year)", chat = 1.77)
+
+model_list_df <- as.data.frame(modelList.fullp.nullpsi)
+
+# we will use AIC model selection when chat = 1 or near 1
+# we will use QAIC model selection what chat > 1
+
+# whatever comes out as top model - use in part of model selection
+
+# Part 2 of model selection - the occupancy submodel
+mod2 <- occu(~ bait + year + scale(Broadleaf_and_mixed)
+             ~ scale(Broadleaf_and_mixed) + scale(Coniferous.forest) + scale(Agriculture.with.natural.vegetation) +scale(Moors.and.heathland) + scale(Transitional.woodland.shrub) + scale(year), umf2)
+
+# then conduct model selection
+modelList <- dredge(mod2, rank = "QAIC", fixed = c("p(year)","p(bait)", "p(scale(Broadleaf_and_mixed))"), chat = 1.77)
+
+
+# what ever is the top model in this model selection, is your top model and you should use it to make predictions as we did above. 
+
+
+
 ####################################################################################################
 #options for model selection 
 #option 1 - global model interprtation

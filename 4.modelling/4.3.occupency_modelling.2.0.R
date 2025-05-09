@@ -4,6 +4,7 @@ library(AICcmodavg)
 library(ggplot2)
 library(tidyverse)
 
+setwd("D:/all-ireland-occupancy-modelling")
 #Try the 1km buffer and grid 
 # remember we can always smooth the outputs later if we want to 
 
@@ -18,8 +19,7 @@ lcm_data_1km <- read.csv("1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
 
 str(lcm_data_1km)
 
-# note a stack data fromat is being used here, so each row is a unique site and year combination
-
+# note a stack data fromat is being used here, so each row (each site) is a unique site and year combination
 #  therefore we MUST include year in each site covariate as detection and occupancy probabilities
 
 #####################################################################
