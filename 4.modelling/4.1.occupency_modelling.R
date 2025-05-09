@@ -9,7 +9,7 @@ library(AICcmodavg)
 library(ggplot2)
 library(tidyverse)
 
-
+#notes: 
 # step by step guide to building occupancy models in unmarked
 #' Step 1. Extract covariates at 1km2, 5km2, and 10km2 buffers (or as chosen scale) 
 #' Step 2. Create a fishnet or grid, as the same size as the buffers across all Ireland, and extract covariates at this grid scale
@@ -218,6 +218,12 @@ mod1 <- occu(~ scale(occ) + year + bait
 coef(mod1)
 
 confint(mod1, type = "state", level = 0.95)
+
+#######################
+# conduct model selection?? 
+modelList <- dredge(mod1, rank = "QAIC", fixed = "p(year)", chat = 1.77)
+
+model_list_df <- as.data.frame(modelList.fullp.nullpsi)
   
 #####################################################################################################################
 # create marginal estimates 
