@@ -69,7 +69,7 @@ check_landscape(ireland_CLC)
 colnames(irishgrid_1km_sf)
 
 # sample raster for data for each grid cell 
-all_ireland_lcm_1km <- sample_lsm(ireland_CLC,
+#all_ireland_lcm_1km <- sample_lsm(ireland_CLC,
                                  y = irishgrid_1km_sf,
                                  size = 2500, #half of the side-length for squares in map units
                                  level = "patch",
@@ -81,21 +81,105 @@ View(all_ireland_lcm_1km)
 str(all_ireland_lcm_1km) 
 
 #### save because it takes a while to run
-turn into df 
+#turn into df 
 all_ireland_lcm_1km <- as.data.frame(all_ireland_lcm_1km)
 
 write.csv(all_ireland_lcm_1km, "1.data/1.2.processed/1km_lcm_ireland.csv", row.names = FALSE)
 
+all_ireland_lcm_1km <- read.csv("1.data/1.2.processed/1km_lcm_ireland.csv")
+
+
+
 df <- all_ireland_lcm_1km %>%
   group_by(plot_id, class) %>%
-  summarise(area = sum(value), .groups = "drop")   %>%
-  pivot_wider(names_from = 'class', values_from = value, values_fill = 0)
+  summarise(area = sum(value), .groups = "drop")     %>%
+  pivot_wider(names_from = 'class', values_from = area, values_fill = 0)
+
+View(df)
+
+#rename corine classes 
+#create renaming matrix 
+CLC_matrix <- matrix(c(
+  1, 111,
+  2, 112,
+  3, 121,
+  4, 122,
+  5, 123,
+  6, 124,
+  7, 131,
+  8, 132,
+  9, 133,
+  10, 141,
+  11, 142,
+  12, 211,
+  16, 222,
+  18, 231,
+  20, 242,
+  21, 243,
+  23, 311,
+  24, 312,
+  25, 313,
+  26, 321,
+  27, 322,
+  29, 324,
+  30, 331,
+  31, 332,
+  32, 333,
+  33, 334,
+  35, 411,
+  36, 412,
+  37, 421,
+  39, 423,
+  40, 511,
+  41, 512,
+  42, 521,
+  43, 522,
+  44, 523
+), ncol = 2, byrow = TRUE)
+
+View(df)
+
+#ensure using correct df 
+# Rename all_ireland_lcm_1km$class according to CLC matrix and add "CLC_" prefix
+rename_map <- setNames(paste0("CLC_", CLC_matrix[, 2]), CLC_matrix[, 1])
+df$class <- as.character(df$class)
+all_ireland_lcm_1km$class <- ifelse(df$class %in% names(rename_map),
+    rename_map[df$class],
+    df$class)
+
+# Rename lcm_df columns according to CLC matrix
+rename_map <- setNames(paste0("CLC_", CLC_matrix[, 2]), CLC_matrix[, 1])
+colnames(grid_5km) <- ifelse(colnames(grid_5km) %in% names(rename_map), rename_map[colnames(grid_5km)], colnames(grid_5km))
+View(grid_5km)
 
 
-df <- all_ireland_lcm_1km %>%
-  group_by(plot_id, `class`) %>%
-  summarise(area = sum(value), .groups = "drop") %>%
-  tidyr::pivot_wider(names_from = `class`, values_from = area, values_fill = 0)
+# calculate proportion of each class in each grid cell 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # issue is above 
   colnames(all_ireland_lcm_1km)
 
