@@ -224,6 +224,9 @@ colnames(lcm_df) <- ifelse(colnames(lcm_df) %in% names(rename_map), rename_map[c
 # save 10km buffer data 
 write.csv(lcm_df, "1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
 
+
+IMPORT LCM_DF
+lcm_df <- read.csv("1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
 View(lcm_df)
 
 #############################################################################################################################
@@ -275,3 +278,62 @@ colnames(grid_df) <- ifelse(colnames(grid_df) %in% names(rename_map), rename_map
 write.csv(grid_df, "1.data/1.2.processed/grid_5km_metrics_3035.csv")
 
 View(grid_df)
+##################################################################################################################
+#######################################################################################################################################################
+
+#IMPORT RAODS AND RIVERS FORM ARCGISPRO FOR 1KM BUFFER 
+
+
+lsm_1km_buffer <- read.csv("1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
+rivers_1km_buffer <- read.csv("1.data/1.3.processedinarc/1kmbuffer_Riversummarylength.csv")
+roads_1km_buffer <- read.csv("1.data/1.3.processedinarc/1kmbuffer_Roadsummarylength.csv")
+
+colnames(lsm_1km_buffer)
+colnames(rivers_1km_buffer)<- c("plot_id", "river_freq", "river_length")
+colnames(roads_1km_buffer) <- c("plot_id", "road_freq", "road_length")
+
+
+roads_and_rivers_plot_id1km_buffer <- merge(lsm_1km_buffer, roads_1km_buffer,by = "plot_id",all = TRUE)
+roads_and_rivers_plot_id1km_buffer <- merge(roads_and_rivers_plot_id1km_buffer, rivers_1km_buffer, by = "plot_id",all = TRUE)
+
+
+colnames(lsm_1km_buffer)
+colnames(rivers_1km_buffer)
+colnames(roads_1km_buffer)
+# Then merge the result with the third
+roads_and_rivers_plot_id1km_buffer <- merge(temp_merge, roads_1km_buffer, by = "col_id")
+
+# replace nas with 0 for length or river and raods 
+cols_to_replace <- c("river_freq", "river_length", "road_freq", "road_length")
+
+roads_and_rivers_plot_id1km_buffer[cols_to_replace] <- lapply(
+  roads_and_rivers_plot_id1km_buffer[cols_to_replace],
+  function(x) ifelse(is.na(x), 0, x)
+)
+
+colSums(is.na(roads_and_rivers_plot_id1km_buffer[cols_to_replace]))
+
+View(roads_and_rivers_plot_id1km_buffer)
+
+write.csv(roads_and_rivers_plot_id1km_buffer, file = "1.data/1.3.processedinarc/roads_and_rivers_plot_id1km_buffer.csv", row.names = FALSE)
+
+
+
+
+#############################
+check correlation between roads and urban (1XX)
+# Calculate correlation between road length and urban area
+add all urban together 
+# Sum all columns starting with "CLC_1" to get total urban area
+urban_cols <- grep("^CLC_1", names(roads_and_rivers_plot_id1km_buffer), value = TRUE)
+roads_and_rivers_plot_id1km_buffer$CLC_urban <- rowSums(roads_and_rivers_plot_id1km_buffer[, urban_cols], na.rm = TRUE)
+
+cor(roads_and_rivers_plot_id1km_buffer$road_length, roads_and_rivers_plot_id1km_buffer$CLC_urban, use = "pairwise.complete.obs")
+plot it 
+plot(roads_and_rivers_plot_id1km_buffer$road_length, roads_and_rivers_plot_id1km_buffer$CLC_urban, xlab = "Road Length", ylab = "Urban Area", main = "Correlation between Road Length and Urban Area")
+
+show the difference between the spead of eahc
+
+show historgam of each 
+hist(roads_and_rivers_plot_id1km_buffer$road_length, main = "Histogram of Road Length", xlab = "Road Length")
+hist(roads_and_rivers_plot_id1km_buffer$CLC_urban, main = "Histogram of Urban Area", xlab = "Urban Area")
