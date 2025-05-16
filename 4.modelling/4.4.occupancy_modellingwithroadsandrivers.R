@@ -1,5 +1,5 @@
+rm(list = ls())
 # occupency modelling with roads and rivers - attempt 2 
-
 library(unmarked)
 library(MuMIn)
 library(AICcmodavg)
@@ -35,7 +35,7 @@ nrow(y)
 head(y)
 str(y) 
 
-# lets use the 5km buffer to preserve resolution
+# lets use the 1km buffer to preserve resolution
 siteCovs <- read.csv( "1.data/1.3.processedinarc/roads_and_rivers_plot_id1km_buffer.csv")
 
 # note a stack data fromat is being used here, so each row is a unique site and year combination
@@ -98,22 +98,19 @@ siteCovs$mixedwood <- rowSums(siteCovs[, c("CLC_311", "CLC_313")], na.rm = TRUE)
 # open non agriculture including natural grassland, peat bog, moore and heathland
 siteCovs$opennoneagri <- rowSums(siteCovs[, c("CLC_321", "CLC_412", "CLC_322")], na.rm = TRUE)
 
-# urban - all urban cover types 
-siteCovs$urban <- rowSums(siteCovs[, grep("^CLC_1\\d{2}$", colnames(siteCovs))], na.rm = TRUE)
-
 # road length in m inside each 1km2 buffer 
 siteCovs$road_length <- siteCovs$road_length
 
 #river length in m inside each 1km2 buffer
 siteCovs$river_length <- siteCovs$river_length
 
+head(siteCovs)
 
-
-# 
+View(siteCovs)
 # make a table of each table categoies mean and sd and range 
 # List the columns you want to summarise
 groupings <- c("agrinonpas", "pasture", "conifer", "mixedwood", 
-               "opennoneagri", "urban" , "road_length", "river_length")
+               "opennoneagri", "road_length", "river_length")
 
 # Use sapply to generate the summary table
 summary_table <- t(sapply(siteCovs[, groupings], function(x) {
@@ -136,7 +133,6 @@ hist(siteCovs$pasture) # looks good
 hist(siteCovs$conifer) # looks good
 hist(siteCovs$mixedwood) #looks good
 hist(siteCovs$opennoneagri) # looks good
-hist(siteCovs$urban) # looks good
 hist(siteCovs$road_length) 
 hist(siteCovs$river_length) 
 
@@ -146,7 +142,6 @@ hist(scale(siteCovs$pasture))
 hist(scale(siteCovs$conifer))
 hist(scale(siteCovs$mixedwood))
 hist(scale(siteCovs$opennoneagri))
-hist(scale(siteCovs$urban))
 hist(scale(siteCovs$road_length))
 hist(scale(siteCovs$river_length)) 
 
@@ -173,7 +168,6 @@ mod1 <- occu(~ scale(occ) + scale(year) + bait
              + scale(pasture) 
              + scale(conifer) 
              + scale(mixedwood) 
-             + scale(urban)
              + scale(opennoneagri)
              + scale(road_length)
              + scale(river_length)
@@ -203,7 +197,6 @@ df <- data.frame(cbind(conifer = seq(min(siteCovs$conifer), max(siteCovs$conifer
                         agrinonpas = mean(siteCovs$agrinonpas),
                         pasture = mean(siteCovs$pasture),
                         mixedwood = mean(siteCovs$mixedwood),
-                        urban = mean(siteCovs$urban),
                         road_length = mean(siteCovs$road_length),
                         river_length = mean(siteCovs$river_length),
                         opennoneagri = mean(siteCovs$opennoneagri),
@@ -239,7 +232,6 @@ df <- data.frame(cbind(mixedwood = seq(min(siteCovs$mixedwood), max(siteCovs$mix
                         agrinonpas = mean(siteCovs$agrinonpas),
                         pasture = mean(siteCovs$pasture),
                         conifer = mean(siteCovs$conifer),
-                        urban = mean(siteCovs$urban),
                         opennoneagri = mean(siteCovs$opennoneagri),
                         road_length = mean(siteCovs$road_length),
                         river_length = mean(siteCovs$river_length),
@@ -279,7 +271,6 @@ df <- data.frame(cbind(opennoneagri = seq(min(siteCovs$opennoneagri), max(siteCo
                         pasture = mean(siteCovs$pasture),
                         conifer = mean(siteCovs$conifer),
                         mixedwood = mean(siteCovs$mixedwood),
-                        urban = mean(siteCovs$urban),
                         road_length = mean(siteCovs$road_length),
                         river_length = mean(siteCovs$river_length),
                         year = mean(siteCovs$year)))
@@ -311,7 +302,7 @@ df <- data.frame(cbind(agrinonpas = seq(min(siteCovs$agrinonpas), max(siteCovs$a
                         pasture = mean(siteCovs$pasture),
                         conifer = mean(siteCovs$conifer),
                         mixedwood = mean(siteCovs$mixedwood),
-                        urban = mean(siteCovs$urban),
+                        opennoneagri = mean(siteCovs$opennoneagri),
                         road_length = mean(siteCovs$road_length),
                         river_length = mean(siteCovs$river_length),
                         year = mean(siteCovs$year)))
@@ -342,7 +333,7 @@ df <- data.frame(cbind(pasture = seq(min(siteCovs$pasture), max(siteCovs$pasture
                         agrinonpas = mean(siteCovs$agrinonpas),
                         conifer = mean(siteCovs$conifer),
                         mixedwood = mean(siteCovs$mixedwood),
-                        urban = mean(siteCovs$urban),
+                        opennoneagri = mean(siteCovs$opennoneagri),
                         road_length = mean(siteCovs$road_length),
                         river_length = mean(siteCovs$river_length),
                         year = mean(siteCovs$year)))
@@ -368,11 +359,13 @@ ggplot(preds_df,
     axis.line = element_line(colour = "black")
   )
 
+
 ################## river length #######################################
 df <- data.frame(cbind(river_length = seq(min(siteCovs$river_length), max(siteCovs$river_length), length.out = 200),
                         agrinonpas = mean(siteCovs$agrinonpas),
                         pasture = mean(siteCovs$pasture),
                         conifer = mean(siteCovs$conifer),
+                        opennoneagri = mean(siteCovs$opennoneagri),
                         mixedwood = mean(siteCovs$mixedwood),
                         urban = mean(siteCovs$urban),
                         road_length = mean(siteCovs$road_length),
@@ -408,6 +401,7 @@ ggplot(preds_df,
 df <- data.frame(cbind(road_length = seq(min(siteCovs$road_length), max(siteCovs$road_length), length.out = 200),
                         agrinonpas = mean(siteCovs$agrinonpas),
                         pasture = mean(siteCovs$pasture),
+                        opennoneagri = mean(siteCovs$opennoneagri),
                         conifer = mean(siteCovs$conifer),
                         mixedwood = mean(siteCovs$mixedwood),
                         urban = mean(siteCovs$urban),
@@ -438,4 +432,70 @@ ggplot(preds_df,
     panel.grid.minor = element_blank(),
     axis.line = element_line(colour = "black")
   )
+################################All Ireland ###############################################################
+#### how does this look for all of Ireland ####
+landscape <- read.csv("1.data/1.3.processedinarc/1kmwidecorine.csv")
 
+View(landscape)
+colnames(landscape)
+
+# Rename columns from X### to CLC_###
+colnames(landscape) <- gsub("^X(\\d{3})$", "CLC_\\1", colnames(landscape))
+
+# Import rivers and roads data for all Ireland 1km grid
+rivers_roads <- read.csv("1.data/1.3.processedinarc/1km_all_ireland_grid_rivers_and_roads.csv")
+
+head(rivers_roads)
+# Check for NAs in rivers_roads$gridid
+sum(is.na(rivers_roads$gridid))
+head(landscape)
+# Merge landscape and rivers_roads by gridid
+landscape <- merge(landscape, rivers_roads, by = "gridid", all.x = TRUE)
+
+View(landscape)
+####################################################################################################
+#' Corvariate groupings to match buffers 
+landscape$agrinonpas <- rowSums(landscape[, c("CLC_211", "CLC_242", "CLC_243")], na.rm = TRUE)
+
+# pasture land cover 
+landscape$pasture <- landscape$CLC_231
+
+# conifer including conifer and transitional woodland 
+landscape$conifer <- rowSums(landscape[, c("CLC_312", "CLC_324")], na.rm = TRUE)
+
+# mixed wood including broadleaf and mixed forest 
+landscape$mixedwood <- rowSums(landscape[, c("CLC_311", "CLC_313")], na.rm = TRUE)
+
+# open non agriculture including natural grassland, peat bog, moore and heathland
+landscape$opennoneagri <- rowSums(landscape[, c("CLC_321", "CLC_412", "CLC_322")], na.rm = TRUE)
+
+# road length in m inside each 1km2 buffer 
+landscape$road_length <- landscape$SUM_Length_m_roads
+
+#river length in m inside each 1km2 buffer
+landscape$river_length <- landscape$SUM_Shape_Length
+# create dummy year covariate
+landscape$year <- mean(siteCovs$year)
+
+in df replace nas with 0 
+landscape[is.na(landscape)] <- 0
+View(landscape)
+# make predictions of marten psi across landscape
+colnames(landscape)
+colnames(siteCovs)
+
+preds_allireland <- predict(mod1, landscape, type = "state")
+View(preds_allireland)
+# combine preds with landscape
+preds_df <- cbind(landscape, preds_allireland)# pred are all nas 
+
+write.csv(preds_df, "4.modelling/4.modeloutputs/predicted_occupancy_allirelandmod2.csv", row.names = FALSE)
+
+View(preds_df)
+View(landscape)
+
+str(siteCovs)
+str(landscape)
+check landscape for nas 
+# check for NAs in landscape$gridid
+sum(is.na(landscape$gridid))
