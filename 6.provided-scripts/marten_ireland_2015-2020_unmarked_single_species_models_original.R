@@ -15,6 +15,9 @@ str(y)
 siteCovs <- read.csv('2015-2020_allsites_corinedata_10km2_martenandsquirrelsampling_NI.csv')
 str(siteCovs)
 
+# note a stack data fromat is being used here, so each row (each site) is a unique site and year combination
+#  therefore we MUST include year in each site covariate as detection and occupancy probabilities
+
 # create some detection covariates, for example: occasion number covariate
 occ <- y
 for (i in 1:nrow(y)) {

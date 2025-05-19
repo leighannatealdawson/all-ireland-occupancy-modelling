@@ -130,6 +130,8 @@ siteCovs$agrinonpas <- rowSums(siteCovs[, c("CLC_211", "CLC_242", "CLC_243")], n
 # pasture land cover 
 siteCovs$pasture <- siteCovs$CLC_231
 
+
+
 # conifer including conifer and transitional woodland 
 siteCovs$conifer <- rowSums(siteCovs[, c("CLC_312", "CLC_324")], na.rm = TRUE)
 
@@ -421,6 +423,7 @@ ggplot(preds_df,
 ###########################################################################################
 #### how does this look for all of Ireland ####
 landscape <- read.csv("1.data/1.3.processedinarc/10kmwidecorine.csv")
+
 View(landscape)
 colnames(landscape)
 

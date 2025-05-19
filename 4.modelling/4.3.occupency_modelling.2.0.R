@@ -16,6 +16,7 @@ y <- as.matrix(y)
 str(y)
 # consider which szie buffer we want to use for our analysis 
 lcm_data_1km <- read.csv("1.data/1.2.processed/lcm_df_1km_buffer_3035.csv")
+siteCovs <- read.csv("1.data/1.3.processedinarc/camerapoints_rivers_and_roads.csv")
 
 str(lcm_data_1km)
 
@@ -68,7 +69,7 @@ siteCovs$agrinonpas <- rowSums(siteCovs[, c("CLC_211", "CLC_242", "CLC_243")], n
 # pasture land cover 
 siteCovs$pasture <- siteCovs$CLC_231
 
-# conifer including conifer and transitional woodland 
+# conifer including conifer and transitional woodland
 siteCovs$conifer <- rowSums(siteCovs[, c("CLC_312", "CLC_324")], na.rm = TRUE)
 
 # mixed wood including broadleaf and mixed forest 
