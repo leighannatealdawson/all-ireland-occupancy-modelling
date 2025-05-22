@@ -2,7 +2,7 @@ clear working directory
 rm(list = ls(all = TRUE))
 
 library(purrr)
-library(tidyr)
+library(tidyr) 
 library(dplyr)
 library(sf)
 library(terra)
@@ -15,7 +15,6 @@ library(maptiles)
 library(raster)
 library(landscapemetrics)
 library(tidyverse)
-library(terra)
 
 # lets extract the corine raster data for each of the 1/5/10km grid cells using landscapemetrics
 
@@ -24,14 +23,55 @@ ireland_CLC <- raster("1.data/1.1.raw/corine_raster/DATA/U2018_CLC2018_V2020_20u
 plot(ireland_CLC)
 crs(ireland_CLC)
 
-# import 
-compiled_1km <- read.csv("1.data/1.3.processedinarc/compiled1km.csv")
-View(compiled_1km)
+# import 1km grid shapefile
+grid_1km <- st_read("1.data/1.3.processedinarc/1kmgridireland/1kmgridallireland.shp")
+class(grid_1km)
 
-# Import 1km grid with data
-irishgrid_1km <- read.csv("1.data/1.3.processedinarc/irishgrid1kmwithDD.csv")
-View(irishgrid_1km)
+# check the CRS of the grid
+st_crs(grid_1km)
+View(grid_1km)
+plot(grid_1km)
 
+# transform to same CRS at Ireland raster (see crs(Ireland) above)
+grid_1km <- st_transform(grid_1km, crs = "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs")
+
+# check crs match 
+st_crs(grid_1km) == st_crs(ireland_CLC)
+
+grid_1km_top10 <- grid_1km %>%
+  slice_head(n = 10)
+View(grid_1km_top10)
+
+#area of each class for each 1km2 grid cell
+grid_1km_lsm <- sample_lsm(ireland_CLC, y = grid_1km, what = "lsm_p_area")
+
+View(grid_1km_lsm)
+print("done")
+
+write.csv(grid_1km_lsm, "1.data/1.2.processed/1km_lcm_ireland_grid22_05_2025_pregrouping.csv", row.names = FALSE)
+
+df <- grid_1km_lsm %>%
+  group_by(plot_id, class) %>%
+  summarise(area = sum(value) %>% 
+  spread(class, area)
+
+write.csv(df, "1.data/1.2.processed/1km_lcm_ireland_grid22_05_2025_postgrouping.csv", row.names = FALSE)
+
+
+#################################################################################################
+#################################################################################################
+# rename corine classes 
+
+
+
+
+
+
+
+# plot to verify alignment
+plot(ireland_CLC)
+plot(grid_1km, add = TRUE, border = "blue", lwd = 0.5)
+# ... existing code ...
 #keep only the columns we need
 irishgrid_1km <- irishgrid_1km[, c("gridid", "x", "y")]
 
@@ -324,3 +364,19 @@ View(grid_5km)
 
 ?landscapemetrics::sample_lsm
 ##### try from points and extract for a square for 5km 
+
+# import 1km grid shapefile
+grid_1km <- st_read("1.data/1.3.processedinarc/1kmgridireland/1kmgridallireland.shp")
+
+# check the CRS of the grid
+st_crs(grid_1km)
+
+# reproject to match the CORINE raster CRS if needed
+grid_1km <- st_transform(grid_1km, crs = st_crs(ireland_CLC))
+
+# add plot IDs to each grid cell
+grid_1km$plot_id <- 1:nrow(grid_1km)
+
+# plot to verify alignment
+plot(ireland_CLC)
+plot(grid_1km, add = TRUE, border = "blue", lwd = 0.5)

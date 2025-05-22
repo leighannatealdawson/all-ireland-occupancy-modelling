@@ -11,6 +11,15 @@
 # 2. Load the study area boundary for Ireland.
 # 3. Load the Irish Grid Reference system.  
 #
+install.packages("sf")
+install.packages("raster")
+install.packages("tidyverse")
+install.packages("terra")
+install.packages("igr")
+install.packages("rnaturalearth")
+install.packages("rnaturalearthdata")
+install.packages("ggplot2")
+install.packages("dplyr")
 
 rm(list = ls())
 

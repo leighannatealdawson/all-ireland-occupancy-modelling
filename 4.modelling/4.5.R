@@ -33,7 +33,6 @@ y <- as.matrix(y)
 
 nrow(y)
 head(y)
-str(y) 
 
 # lets use the 1km buffer to preserve resolution
 siteCovs <- read.csv( "1.data/1.3.processedinarc/roads_and_rivers_plot_id1km_buffer.csv")
