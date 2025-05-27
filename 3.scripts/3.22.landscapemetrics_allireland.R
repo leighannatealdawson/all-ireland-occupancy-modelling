@@ -50,12 +50,21 @@ print("done")
 
 write.csv(grid_1km_lsm, "1.data/1.2.processed/1km_lcm_ireland_grid22_05_2025_pregrouping.csv", row.names = FALSE)
 
+read this infer from the pregrouping file 
+grid_1km_lsm <- read.csv("1.data/1.2.processed/1km_lcm_ireland_grid22_05_2025_pregrouping.csv")
+
+#sum the different classes
 df <- grid_1km_lsm %>%
   group_by(plot_id, class) %>%
-  summarise(area = sum(value) %>% 
+  summarise(area = sum(value)) %>%
   spread(class, area)
 
+head(df)
+
+
+
 write.csv(df, "1.data/1.2.processed/1km_lcm_ireland_grid22_05_2025_postgrouping.csv", row.names = FALSE)
+
 
 
 #################################################################################################
