@@ -5,7 +5,8 @@ rm(list = ls())
 #############################################################################################
 # use landscape df of  all ireland in 1km grid
 landscape <- read.csv("1.data/1.3.processedinarc/1kmwidecorine.csv")
-
+View(landscape)
+nrow(landscape)
 # rename columns to match siteCovs
 colnames(landscape) <- gsub("^X(\\d{3})$", "CLC_\\1", colnames(landscape))
 
@@ -85,6 +86,8 @@ ggplot(landscape, aes(x = urban, y = roads)) +
 
 # add roads to landscape_datainput
 landscape_datainput$roads <- landscape$roads
+
+landscape_datainput$urban <- landscape$urban
 
 ############################# woodlands #####################################################
 landscape$broadleaf <- landscape$CLC_311

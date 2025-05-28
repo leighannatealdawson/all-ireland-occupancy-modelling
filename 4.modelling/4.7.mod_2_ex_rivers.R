@@ -12,6 +12,7 @@ library(ggplot2)
 library(tidyverse)
 library(AER)
 
+
 # Load detection data
 y <- read.csv("6.provided-scripts/pinemarten201520182020noname.csv")
 y <- as.matrix(y)
@@ -65,7 +66,7 @@ for (var in covariates_to_plot) {
     }
   }
   
-  preds <- predict(mod2, newdata = df, type = "state")
+  preds <- predict(mod1, newdata = df, type = "state")
   preds_df <- cbind(df, preds)
   
   p <- ggplot(preds_df, aes_string(x = var, y = "Predicted")) +
@@ -87,8 +88,8 @@ gridExtra::grid.arrange(grobs = plot_list, ncol = 2)
  
 
 ############################## PREDICT ACROSS FULL LANDSCAPE ##############################
-# Predict across full landscape uasing pre grouped data from 4.0
-landscape <- read.csv("1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings.csv")
+# Predict across full landscape uasing pre grouped data from 4.0.2 so we use the landscape metrics 
+landscape <- read.csv("1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings_27_5.csv")
 
 # set year to mean year of study
 landscape$year <- mean(siteCovs$year)
@@ -137,7 +138,7 @@ occ_gof1
 # Fit model 2 (excluding rivers)
 mod2 <- occu(~ scale(occ) + scale(year) + bait ~ 
                scale(agri) + scale(conifer) + scale(mixedwood) + 
-               scale(roads) + scale(opennoneagri) + scale(year), umf2)
+               scale(roads) + scale(opennoneagri) + scale(year), umf1)
 
 # Coefficients and confidence intervals
 coef(mod2)
@@ -178,7 +179,7 @@ for (var in covariates_to_plot) {
 gridExtra::grid.arrange(grobs = plot_list, ncol = 2)
 
 # Predict across full landscape
-landscape <- read.csv("1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings.csv")
+landscape <- read.csv("1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings_27_5.csv")
 landscape$year <- mean(siteCovs$year)
 
 # Scale variables in landscape using training data mean/sd
@@ -199,7 +200,7 @@ preds_df <- cbind(landscape, preds_allireland)
 
 irish_grid <- read.csv("1.data/1.3.processedinarc/irishgrid1kmwithDD.csv")
 irish_grid_preds <- merge(irish_grid, preds_df, by = "gridid", all.x = TRUE)
-
+View(irish_grid_preds)
 write.csv(irish_grid_preds, "4.modelling/4.modeloutputs/predicted_occupancy_allirelandmod2_norivers.csv", row.names = FALSE)
 
 hist(irish_grid_preds$Predicted, breaks = 30, main = "Histogram of Predicted Occupancy Probability", xlab = "Predicted Occupancy Probability", col = "skyblue", border = "white")
