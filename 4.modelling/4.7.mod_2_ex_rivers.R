@@ -89,7 +89,7 @@ gridExtra::grid.arrange(grobs = plot_list, ncol = 2)
 
 ############################## PREDICT ACROSS FULL LANDSCAPE ##############################
 # Predict across full landscape uasing pre grouped data from 4.0.2 so we use the landscape metrics 
-landscape <- read.csv("1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings_27_5.csv")
+landscape <- read.csv(" "1.data/1.2.processed/lcm_1km_grid_27_05_using_total_prop.csv"")
 
 # set year to mean year of study
 landscape$year <- mean(siteCovs$year)

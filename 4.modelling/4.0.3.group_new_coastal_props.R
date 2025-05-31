@@ -4,7 +4,8 @@ library(ggplot2)
 rm(list = ls())
 #############################################################################################
 # use landscape df of  all ireland in 1km grid
-landscape <- read.csv("1.data/1.2.processed/lcm_1km_grid_27_05_using_total_prop.csv")
+landscape <- read.csv("1.data/1.3.processedinarc/1kmwidecorine.csv")
+landscape <- read.csv("1.data/1.2.processed/lcm_1km_grid_27_05.csv")
 
 nrow(landscape)
 
@@ -146,8 +147,8 @@ cor(landscape_datainput[, c("conifer", "mixedwood", "agri", "roads", "rivers", "
 
 # change all nas to 0 
 landscape_datainput[is.na(landscape_datainput)] <- 0
-write.csv(landscape_datainput, "1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings_27_5.csv", row.names = FALSE)
-
+write.csv(landscape_datainput, "1.data/1.4.final_data_gropupings/landscape_datainput_1km_grid_groupings_27_5_coastal_props.csv", row.names = FALSE)
+head(landscape_datainput)
 View(landscape_datainput)
 #############################################################################################
 

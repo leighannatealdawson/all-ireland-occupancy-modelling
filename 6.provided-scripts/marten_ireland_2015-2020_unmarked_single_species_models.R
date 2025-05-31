@@ -1,13 +1,25 @@
 setwd('C:/Users/twininjo/Documents/R/Leighanna_Dawson_marten_ireland')
-
+setwd('C:/VScode/all-ireland-occupancy-modelling')
 # load packages
 library('unmarked')
 library('MuMIn')
 library('AICcmodavg')
 
+# step by step guide to building occupancy models in unmarked
+#' Step 1. Extract covariates at 1km2, 5km2, and 10km2 buffers (or as chosen scale) 
+#' Step 2. Create a fishnet or grid, as the same size as the buffers across all Ireland, and extract covariates at this grid scale
+#' Step 3. Sanity check - plot your covariates on your grid in ArcGIS - do they look right?
+#' You can start building models.... But first
+#' Step 4.  Write down your hypotheses for covariate effects on detection probability and occupancy based on species ecology
+#' Step 5. Think about how you might combine some of the various classes in the CORINE data (for example, broadleaf + mixed forest becomes broadleaf and mixed).
+#' Step 6. Build a global model - and check goodness of fit
+#' Step 7. Decide on whether you are going to interpret your global model or conduct AIC-based model selection
+#' Step 8. Make marginal predictions for covariates in top model (explore covariate space across range of sampled values for that covariate, while keeping all others at their mean). 
+#' Step 9. Make predictions for marten psi (occupancy probability) across the landscape, plot them in ArcGIS
+#' Step 10. Celebrate, you did it!
 
+Step 11. Use your predictions to determine what sites to use for other parts of research (social surveys, scat surveys, and camera deployments).
 # read in detection/non-detection data
-y <- read.csv("pinemarten201520182020noname.csv")
 y <- read.csv("6.provided-scripts/pinemarten201520182020noname.csv")
 y <- as.matrix(y)
 
@@ -49,6 +61,7 @@ hist(siteCovs$Transitional.woodland.shrub)
 hist(siteCovs$Moors.and.heathland)
 hist(scale(siteCovs$Coniferous.forest))
 
+
 #create combined class for covariates, for example, here I create broadleaf and mixed forest covariate 
 siteCovs$Broadleaf_and_mixed <- siteCovs$Broadleaved.forest + siteCovs$Mixed.forest
 hist(siteCovs$Broadleaf_and_mixed)
@@ -59,14 +72,21 @@ umf2 = unmarkedFrameOccu(y = y, siteCovs = siteCovs, obsCovs = obvsCov)
 
 str(umf2)
 head(siteCovs)
-
+str(umf2@siteCovs)
 
 # wait here and put some thought into the models you want to build - what covaraites do you have hypotheses for - write these down. 
 
 # create first model as an example
 
 mod1 <- occu(~ scale(occ) + scale(year) + bait
-             ~ scale(Broadleaf_and_mixed) + scale(Coniferous.forest) + scale(Agriculture.with.natural.vegetation) +scale(Moors.and.heathland) + scale(Transitional.woodland.shrub) + scale(year), umf2)
+             ~ scale(Broadleaf_and_mixed) 
+             + scale(Coniferous.forest) 
+             + scale(Agriculture.with.natural.vegetation) 
+             + scale(Moors.and.heathland) 
+             + scale(Transitional.woodland.shrub) 
+             + scale(year), umf2)
+colnames(siteCovs)
+View(occ)
 
 coef(mod1)
 
@@ -82,6 +102,7 @@ df <- data.frame(cbind(Coniferous.forest = seq(min(siteCovs$Coniferous.forest), 
                        Discontinuous.urban.fabric = mean(siteCovs$Discontinuous.urban.fabric),
                        Agriculture.with.natural.vegetation = mean(siteCovs$Agriculture.with.natural.vegetation),
                        Transitional.woodland.shrub = mean(siteCovs$Transitional.woodland.shrub),
+                        Moors.and.heathland = mean(siteCovs$Moors.and.heathland),
                        year = mean(siteCovs$year)))
 
 
@@ -92,7 +113,8 @@ preds <- predict(mod1, newdata = df, type = "state")
 
 # combine with the dataframe
 preds_df <- cbind(df, preds)
-
+View(preds_df)
+library(ggplot2)
 # plot it.
 ggplot(preds_df,
          aes(
@@ -109,22 +131,12 @@ ggplot(preds_df,
     panel.grid.minor = element_blank(),
     axis.line = element_line(colour = "black")
   )
-
+  
 # what about predictions across ireland?
 
 # read in the data
-landscape <- read.csv('allireland_corinedata_10km2grid.csv')
-landscape$year <- mean(siteCovs$year)
-landscape$Broadleaf_and_mixed <- landscape$Broadleaved.forest + landscape$Coniferous.forest
-
-# make predictions of marten psi across landscape
-preds_allireland <- predict(mod1, landscape, type = "state")
-
-# combine preds with landscape
-preds_df <- cbind(landscape, preds_allireland)
-
-write.csv(preds_df, "all_ireland_marten_psi_preds_example.csv")
-
+ 
+0
 # if there is time we can talk about .....
 # two step model selection.....
 
